@@ -1,0 +1,31 @@
+tools:
+  trimmomatic:
+    mode: conda
+    env: /data/software/ecometa-flow/envs/trimmomatic
+    command: trimmomatic
+
+  megahit:
+    mode: command
+    command: megahit
+
+  virsorter2:
+    mode: conda
+    env: /data/software/ecometa-flow/envs/virsorter2
+    command: virsorter2
+
+  checkv:
+    mode: conda
+    env: /data/software/ecometa-flow/envs/checkv
+    command: checkv
+
+  bowtie2:
+    mode: command
+    command: bowtie2
+
+  samtools:
+    mode: command
+    command: samtools
+
+databases:
+  checkv_db: /data/database/checkv-db
+  kraken2_db: /data/database/kraken2-db

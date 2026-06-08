@@ -1,0 +1,77 @@
+tools:
+  trimmomatic:
+    installer: conda
+    package: bioconda::trimmomatic
+
+  megahit:
+    installer: conda
+    package: bioconda::megahit
+
+  virsorter2:
+    installer: conda
+    package: bioconda::virsorter2
+
+  genomad:
+    installer: conda
+    package: bioconda::genomad
+
+  vibrant:
+    installer: conda
+    package: bioconda::vibrant
+
+  checkv:
+    installer: conda
+    package: bioconda::checkv
+
+  bowtie2:
+    installer: conda
+    package: bioconda::bowtie2
+
+  samtools:
+    installer: conda
+    package: bioconda::samtools
+
+  basalt:
+    installer: conda
+    package: bioconda::basalt
+
+  checkm:
+    installer: conda
+    package: bioconda::checkm
+
+  drep:
+    installer: conda
+    package: bioconda::drep
+
+  gtdbtk:
+    installer: conda
+    package: bioconda::gtdbtk
+
+  kraken2:
+    installer: conda
+    package: bioconda::kraken2
+
+  taxonkit:
+    installer: conda
+    package: bioconda::taxonkit
+
+  coverm:
+    installer: conda
+    package: bioconda::coverm
+
+databases:
+  checkv_db:
+    installer: manual_or_download_later
+    note: "Database download will be implemented in a future version."
+
+  kraken2_db:
+    installer: manual_or_download_later
+    note: "Database download will be implemented in a future version."
+
+  gtdbtk_db:
+    installer: manual_or_download_later
+    note: "Database download will be implemented in a future version."
+
+  pathogen_db:
+    installer: manual_or_download_later
+    note: "Database download will be implemented in a future version."

@@ -1,0 +1,46 @@
+modules:
+  virus_prediction:
+    tools:
+      - trimmomatic
+      - megahit
+      - virsorter2
+      - genomad
+      - vibrant
+      - checkv
+      - bowtie2
+      - samtools
+    databases:
+      - checkv_db
+
+  mag_pipeline:
+    tools:
+      - trimmomatic
+      - megahit
+      - basalt
+      - checkm
+      - drep
+      - gtdbtk
+      - coverm
+    databases:
+      - gtdbtk_db
+
+  read_based_risk:
+    tools:
+      - trimmomatic
+      - kraken2
+      - taxonkit
+    databases:
+      - kraken2_db
+      - pathogen_db
+
+  micro_risk:
+    tools:
+      - trimmomatic
+      - kraken2
+      - taxonkit
+      - bowtie2
+      - samtools
+    databases:
+      - kraken2_db
+      - pathogen_db
+      - checkv_db
