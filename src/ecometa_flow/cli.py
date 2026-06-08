@@ -89,7 +89,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     # --- install ---
     install_parser = subparsers.add_parser(
-        "install", help="Plan installation of tools and databases (mock in v0.1.0)"
+        "install", help="Plan installation of tools and databases in dry-run mode"
     )
     install_group = install_parser.add_mutually_exclusive_group(required=True)
     install_group.add_argument(
@@ -110,7 +110,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--dry-run",
         action="store_true",
         default=True,
-        help="Show install plan without making changes (default in v0.1.0)",
+        help="Show install plan without making changes (default in v0.2.0)",
     )
 
     return parser

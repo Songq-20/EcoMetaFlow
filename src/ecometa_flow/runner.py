@@ -1,4 +1,4 @@
-"""Create work directories, write scripts, and optionally execute them."""
+"""Create work directories, write scripts, and preview or execute them."""
 
 from __future__ import annotations
 
@@ -41,16 +41,22 @@ def write_scripts(
     return written
 
 
+def _print_script_preview(script_path: Path) -> None:
+    """Print one generated shell script exactly as the user would inspect it."""
+    print(f"\n# --- {script_path.name} ---")
+    print(script_path.read_text(encoding="utf-8"))
+
+
 def run_scripts(script_paths: list[Path], dry_run: bool) -> None:
     """
     Execute shell scripts in order, or print them when dry_run is True.
 
-    In v0.1.0, dry_run is the recommended default behaviour.
+    Dry-run remains the recommended workflow because the generated scripts are
+    meant to be inspected before any real bioinformatics environment is used.
     """
     for script_path in script_paths:
         if dry_run:
-            print(f"\n# --- {script_path.name} ---")
-            print(script_path.read_text(encoding="utf-8"))
+            _print_script_preview(script_path)
         else:
             print(f"Running {script_path} ...")
             subprocess.run(

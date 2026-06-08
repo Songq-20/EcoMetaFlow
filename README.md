@@ -4,8 +4,8 @@ EcoMetaFlow is a beginner-friendly bioinformatics workflow runner for environmen
 
 It is designed to help users organize and run common environmental omics workflows with fewer manual configuration steps.
 
-> Current version: v0.1.0 skeleton  
-> Status: workflow runner prototype. It does not run real bioinformatics tools yet.
+> Current version: v0.2.0  
+> Status: dry-run workflow planner with realistic shell command generation. It does not execute real bioinformatics tools in this version.
 
 ---
 
@@ -44,7 +44,7 @@ EcoMetaFlow currently defines four module names:
 | `read_based_risk` | Read-based microbial risk screening using taxonomic classification. |
 | `micro_risk` | Integrated microbial risk analysis based on viral, MAG, and read-based results. |
 
-In v0.1.0, these modules only generate planned commands and directory structures. They do not run real external tools.
+In v0.2.0, these modules generate realistic dry-run shell commands and directory structures. They still do not run real external tools.
 
 ---
 
@@ -64,7 +64,7 @@ Install Python dependencies:
 pip install -r requirements.txt
 ```
 
-v0.1.0 only requires:
+v0.2.0 only requires:
 
 ```text
 PyYAML
@@ -98,13 +98,22 @@ ecometa-flow run \
 
 Dry-run mode prints the planned commands but does not execute them.
 
+In v0.2.0, the generated scripts now include realistic commands for:
+
+- read trimming
+- assembly
+- viral prediction and abundance estimation
+- MAG binning, QC, taxonomy, and abundance estimation
+- read-based taxonomic screening and pathogen summaries
+- integrated microbial risk dry-run planning
+
 ---
 
 ## Input file naming rules
 
 EcoMetaFlow scans the input folder and detects paired-end reads automatically.
 
-v0.1.0 supports these common patterns:
+v0.2.0 supports these common patterns:
 
 ```text
 Sample_R1.fq.gz / Sample_R2.fq.gz
@@ -174,7 +183,7 @@ or:
 ecometa-flow install --all
 ```
 
-In v0.1.0, installation is dry-run/mock only. It reports what would be installed.
+In v0.2.0, installation is still dry-run only. It reports the `conda create -p ...` commands that would be used and suggests matching `envs.yaml` entries.
 
 ### For HPC/shared users
 
@@ -275,7 +284,7 @@ ecometa-flow install --all --dry-run
 
 `--all` may be very large in future versions because databases can be huge. Most users should start with module-level installation.
 
-In v0.1.0, `install` does not really download tools or databases. It only reports what would be installed.
+In v0.2.0, `install` still does not download tools or databases. It only reports what would be installed.
 
 ---
 
@@ -315,11 +324,11 @@ pytest tests/
 
 ## Current limitations
 
-v0.1.0 is a skeleton release.
+v0.2.0 is still a safe dry-run release.
 
 It does not:
 
-- run real Trimmomatic / MEGAHIT / VirSorter2 / CheckV commands
+- execute real Trimmomatic / MEGAHIT / VirSorter2 / CheckV commands
 - create real conda environments
 - download large databases
 - run Snakemake or Nextflow
@@ -327,27 +336,23 @@ It does not:
 - calculate real risk indexes
 - support all possible FASTQ naming patterns
 
-The purpose of v0.1.0 is to establish the project structure, CLI design, input scanning, environment checking, and dry-run command generation.
+The purpose of v0.2.0 is to provide realistic, inspectable workflow scripts while keeping the CLI, environment checks, and dry-run safety model beginner-friendly.
 
 ---
 
 ## Roadmap
 
-### v0.2.0
-
-Generate real shell scripts for Trimmomatic and MEGAHIT.
-
 ### v0.3.0
 
-Add real command generation for viral prediction tools.
+Add optional report summarization and richer workflow validation.
 
 ### v0.4.0
 
-Add MAG pipeline command generation.
+Add execution guards and more configurable module-level parameters.
 
 ### v0.5.0
 
-Add read-based microbial risk screening.
+Add safer semi-automated environment bootstrapping.
 
 ### v0.6.0
 
