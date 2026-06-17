@@ -5,6 +5,25 @@ All notable changes to EcoMetaFlow are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-17
+
+### Added
+
+- Optional `run --report` generation for reader-facing workflow reports
+- Static Markdown report at `report/report.md`
+- Static HTML report at `report/report.html` with inline CSS and no JavaScript
+- Report sections for overview, run information, sample information,
+  environment readiness, planned workflow, generated scripts, future result
+  placeholders, warnings/limitations, and reproducibility notes
+- PATH-aware environment readiness details in workflow validation metadata
+- Tests covering report creation, report content, no-report default behavior,
+  HTML content, and honest no-fake-results placeholders
+
+### Changed
+
+- CLI version bumped to `0.6.0`
+- Generated script headers now identify the v0.6.0 dry-run workflow plan
+
 ## [0.5.0] - 2026-06-17
 
 ### Added

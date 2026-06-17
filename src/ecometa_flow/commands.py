@@ -124,7 +124,7 @@ def generate_script_contents(
     """Return the shell script body for a given module step."""
     header = (
         "#!/usr/bin/env bash\n"
-        f"# EcoMetaFlow v0.5.0 dry-run workflow plan\n"
+        f"# EcoMetaFlow v0.6.0 dry-run workflow plan\n"
         f"# Module: {module}\n"
         f"# Script: {script_name}\n"
         "set -euo pipefail\n\n"

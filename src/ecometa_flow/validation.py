@@ -9,6 +9,7 @@ from typing import Any
 from ecometa_flow.config import MODULE_NAMES
 from ecometa_flow.envs import compare_requirements, load_envs, resolve_envs_path
 from ecometa_flow.guards import validate_output_directory, validate_threads
+from ecometa_flow.installer import detect_tools_in_path
 from ecometa_flow.modules import MODULE_SCRIPTS
 from ecometa_flow.parameters import ParameterError, load_effective_parameters
 from ecometa_flow.requirements import get_module_requirements, load_requirements
@@ -43,6 +44,8 @@ class WorkflowValidation:
             "missing_databases": [],
         }
     )
+    tools_found_path: dict[str, str] = field(default_factory=dict)
+    tools_missing_after_path: list[str] = field(default_factory=list)
     generated_scripts: list[Path] = field(default_factory=list)
     input_dir_exists: bool = False
     samples_valid: bool = False
@@ -93,7 +96,7 @@ def validate_workflow(
         execution_status=(
             "No external tools were executed in dry-run mode"
             if dry_run
-            else "Real execution disabled in v0.5.0"
+            else "Real execution disabled in v0.6.0"
         ),
     )
 
@@ -153,6 +156,10 @@ def validate_workflow(
         report.requirements["tools"],
         report.requirements["databases"],
         report.envs,
+    )
+    report.tools_found_path = detect_tools_in_path(report.comparison["missing_tools"])
+    report.tools_missing_after_path = sorted(
+        set(report.comparison["missing_tools"]) - set(report.tools_found_path)
     )
 
     if report.ok:

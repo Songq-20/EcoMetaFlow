@@ -15,6 +15,7 @@ from ecometa_flow.envs import (
     resolve_envs_path,
 )
 from ecometa_flow.installer import run_install
+from ecometa_flow.reporting import write_reports
 from ecometa_flow.requirements import get_module_requirements
 from ecometa_flow.runner import create_work_directories, run_scripts, write_scripts
 from ecometa_flow.summary import (
@@ -83,6 +84,11 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Allow regenerating dry-run outputs in an existing output directory",
     )
+    run_parser.add_argument(
+        "--report",
+        action="store_true",
+        help="Generate reader-facing Markdown and HTML workflow reports",
+    )
 
     # --- check ---
     check_parser = subparsers.add_parser(
@@ -122,7 +128,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--dry-run",
         action="store_true",
         default=True,
-        help="Show install plan without making changes (default in v0.5.0)",
+        help="Show install plan without making changes (default in v0.6.0)",
     )
     install_parser.add_argument(
         "--write-script",
@@ -217,6 +223,16 @@ def cmd_run(args: argparse.Namespace) -> int:
         summary_path = write_workflow_summary(validation)
         print()
         print(format_console_workflow_summary(validation, summary_path))
+
+    if args.report:
+        report_md, report_html = write_reports(validation)
+        print()
+        print("Reader-facing report generated:")
+        print(f"  Markdown: {report_md}")
+        print(f"  HTML: {report_html}")
+        if args.dry_run:
+            print("Report is based on dry-run metadata.")
+            print("No biological results were generated.")
 
     if args.dry_run:
         print("\n=== Dry-run: planned commands ===")

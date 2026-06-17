@@ -154,6 +154,7 @@ def test_workflow_summary_md_creation(tmp_path: Path, capsys) -> None:
     assert "| S1 |" in text
     assert "No external tools were executed in dry-run mode" in text
     assert str(summary) in output
+    assert not (work / "report").exists()
 
 
 def test_run_with_params_writes_params_path_to_summary(
@@ -212,6 +213,145 @@ def test_run_without_params_still_works(tmp_path: Path, capsys) -> None:
     assert exit_code == 0
     assert "- params.yaml: (not provided)" in text
     assert "- params.yaml loaded: not provided" in text
+
+
+def test_run_with_report_creates_markdown_and_html(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    reads = _make_reads(tmp_path)
+    envs = _make_envs_file(tmp_path)
+    work = tmp_path / "work_with_report"
+
+    exit_code = main([
+        "run",
+        "-m",
+        "virus_prediction",
+        "-i",
+        str(reads),
+        "-o",
+        str(work),
+        "--envs",
+        str(envs),
+        "--dry-run",
+        "--report",
+    ])
+
+    output = capsys.readouterr().out
+    report_md = work / "report" / "report.md"
+    report_html = work / "report" / "report.html"
+    assert exit_code == 0
+    assert report_md.is_file()
+    assert report_html.is_file()
+    assert str(report_md) in output
+    assert str(report_html) in output
+    assert "Report is based on dry-run metadata." in output
+    assert "No biological results were generated." in output
+
+
+def test_markdown_report_contains_reader_sections(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    reads = _make_reads(tmp_path)
+    envs = _make_envs_file(tmp_path)
+    work = tmp_path / "work_report_md"
+
+    exit_code = main([
+        "run",
+        "-m",
+        "virus_prediction",
+        "-i",
+        str(reads),
+        "-o",
+        str(work),
+        "--envs",
+        str(envs),
+        "--dry-run",
+        "--report",
+    ])
+
+    capsys.readouterr()
+    text = (work / "report" / "report.md").read_text(encoding="utf-8")
+    assert exit_code == 0
+    assert "# EcoMetaFlow Report" in text
+    assert "module: virus_prediction" in text
+    assert "## 3. Sample information" in text
+    assert "| SampleID | R1 | R2 |" in text
+    assert "## 4. Environment readiness" in text
+    assert "## 5. Planned workflow" in text
+    assert "raw reads -> Trimmomatic" in text
+    assert "## 6. Generated workflow scripts" in text
+    assert "## 8. Warnings and limitations" in text
+    assert "Dry-run mode was enabled" in text
+    assert "No external bioinformatics tools were executed" in text
+    assert "viral contig summary: not generated yet" in text
+    assert "These sections will be populated in future versions" in text
+
+
+def test_html_report_contains_reader_sections(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    reads = _make_reads(tmp_path)
+    envs = _make_envs_file(tmp_path)
+    work = tmp_path / "work_report_html"
+
+    exit_code = main([
+        "run",
+        "-m",
+        "virus_prediction",
+        "-i",
+        str(reads),
+        "-o",
+        str(work),
+        "--envs",
+        str(envs),
+        "--dry-run",
+        "--report",
+    ])
+
+    capsys.readouterr()
+    html = (work / "report" / "report.html").read_text(encoding="utf-8")
+    assert exit_code == 0
+    assert "<h1>EcoMetaFlow Report</h1>" in html
+    assert "<h2>3. Sample information</h2>" in html
+    assert "<table>" in html
+    assert "<h2>4. Environment readiness</h2>" in html
+    assert "<h2>5. Planned workflow</h2>" in html
+    assert "<h2>6. Generated workflow scripts</h2>" in html
+    assert "viral contig summary: not generated yet" in html
+
+
+def test_report_does_not_contain_fake_biological_results(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    reads = _make_reads(tmp_path)
+    envs = _make_envs_file(tmp_path)
+    work = tmp_path / "work_report_honest"
+
+    exit_code = main([
+        "run",
+        "-m",
+        "virus_prediction",
+        "-i",
+        str(reads),
+        "-o",
+        str(work),
+        "--envs",
+        str(envs),
+        "--dry-run",
+        "--report",
+    ])
+
+    capsys.readouterr()
+    text = (work / "report" / "report.md").read_text(encoding="utf-8")
+    assert exit_code == 0
+    assert "not generated yet" in text
+    assert "No biological result tables were generated." in text
+    assert "viral contig summary: 0" not in text
+    assert "taxonomic abundance table: generated" not in text
 
 
 def test_existing_output_directory_fails_without_force(
