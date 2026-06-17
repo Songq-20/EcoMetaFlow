@@ -5,6 +5,26 @@ All notable changes to EcoMetaFlow are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-17
+
+### Added
+
+- Output directory execution guards for unsafe paths, existing output
+  directories, input/output overlap, and `--force` regeneration
+- Thread count validation with errors for values below 1 and warnings above 128
+- Safe refusal of non-dry-run mode with a clear message that real execution is
+  disabled in v0.4.0
+- Built-in workflow parameter defaults, recursive params YAML merging, and
+  params validation
+- Effective parameters and output guard details in `workflow_summary.md`
+- Tests covering output guards, `--force`, params errors, effective parameter
+  reporting, and non-dry-run refusal
+
+### Changed
+
+- CLI version bumped to `0.4.0`
+- Generated script headers now identify the v0.4.0 dry-run workflow plan
+
 ## [0.3.0] - 2026-06-17
 
 ### Added

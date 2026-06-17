@@ -78,6 +78,11 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print planned commands without executing them",
     )
+    run_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow regenerating dry-run outputs in an existing output directory",
+    )
 
     # --- check ---
     check_parser = subparsers.add_parser(
@@ -131,6 +136,14 @@ def cmd_run(args: argparse.Namespace) -> int:
     samples_path = Path(args.samples).resolve() if args.samples else None
     params_path = Path(args.params).resolve() if args.params else None
 
+    if not args.dry_run:
+        print(
+            "Error: Real execution is not enabled in this version. "
+            "Please use --dry-run.",
+            file=sys.stderr,
+        )
+        return 1
+
     validation = validate_workflow(
         module=module,
         input_dir=input_dir,
@@ -140,6 +153,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         envs_cli=args.envs,
         threads=args.threads,
         dry_run=args.dry_run,
+        force=args.force,
     )
 
     if not validation.ok:

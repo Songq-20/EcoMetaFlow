@@ -6,11 +6,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from ecometa_flow.config import MODULE_NAMES
 from ecometa_flow.envs import compare_requirements, load_envs, resolve_envs_path
+from ecometa_flow.guards import validate_output_directory, validate_threads
 from ecometa_flow.modules import MODULE_SCRIPTS
+from ecometa_flow.parameters import ParameterError, load_effective_parameters
 from ecometa_flow.requirements import get_module_requirements, load_requirements
 from ecometa_flow.samples import load_samples_csv
 from ecometa_flow.scanner import Sample, ScanError, detect_paired_samples
@@ -27,6 +27,7 @@ class WorkflowValidation:
     params_path: Path | None
     threads: int
     dry_run: bool
+    force: bool
     samples: list[Sample] = field(default_factory=list)
     params: dict[str, Any] = field(default_factory=dict)
     requirements: dict[str, list[str]] = field(
@@ -50,8 +51,13 @@ class WorkflowValidation:
     requirements_loaded: bool = False
     envs_found: bool = False
     output_dir_ready: bool = False
+    output_dir_safe: bool = False
+    output_guard_message: str = ""
+    output_dir_exists: bool = False
+    force_enabled: bool = False
     script_list_complete: bool = False
     dry_run_safe: bool = False
+    execution_status: str = "Not started"
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
@@ -70,6 +76,7 @@ def validate_workflow(
     envs_cli: str | None,
     threads: int,
     dry_run: bool,
+    force: bool,
 ) -> WorkflowValidation:
     """Validate inputs and configuration before scripts are generated."""
     report = WorkflowValidation(
@@ -80,12 +87,30 @@ def validate_workflow(
         params_path=params_path,
         threads=threads,
         dry_run=dry_run,
+        force=force,
         dry_run_safe=dry_run,
+        force_enabled=force,
+        execution_status=(
+            "No external tools were executed in dry-run mode"
+            if dry_run
+            else "Real execution disabled in v0.4.0"
+        ),
     )
+
+    thread_errors, thread_warnings = validate_threads(threads)
+    report.errors.extend(thread_errors)
+    report.warnings.extend(thread_warnings)
 
     report.input_dir_exists = input_dir.is_dir()
     if not report.input_dir_exists:
         report.errors.append(f"Input folder does not exist: {input_dir}")
+
+    guard = validate_output_directory(work_dir, input_dir, force)
+    report.output_dir_safe = guard.safe
+    report.output_guard_message = guard.message
+    report.output_dir_exists = guard.output_exists
+    if not guard.safe:
+        report.errors.append(guard.message)
 
     report.module_supported = module in MODULE_NAMES
     if not report.module_supported:
@@ -111,18 +136,10 @@ def validate_workflow(
         except ScanError as exc:
             report.errors.append(str(exc))
 
-    if params_path:
-        if params_path.is_file():
-            try:
-                with params_path.open(encoding="utf-8") as handle:
-                    report.params = yaml.safe_load(handle) or {}
-                report.params_loaded = True
-            except yaml.YAMLError as exc:
-                report.errors.append(f"Could not parse params YAML: {params_path}: {exc}")
-            except OSError as exc:
-                report.errors.append(f"Could not read params YAML: {params_path}: {exc}")
-        else:
-            report.warnings.append(f"params YAML not found: {params_path}")
+    try:
+        report.params, report.params_loaded = load_effective_parameters(params_path)
+    except ParameterError as exc:
+        report.errors.append(str(exc))
 
     report.envs_path = resolve_envs_path(envs_cli)
     report.envs_found = report.envs_path is not None

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import yaml
+
 from ecometa_flow import __version__
 from ecometa_flow.validation import WorkflowValidation
 
@@ -47,6 +49,11 @@ def _params_status(report: WorkflowValidation) -> str:
 
 def render_workflow_summary(report: WorkflowValidation) -> str:
     """Build the Markdown workflow summary document."""
+    params_yaml = yaml.safe_dump(
+        report.params,
+        sort_keys=False,
+        default_flow_style=False,
+    ).strip()
     lines = [
         "# EcoMetaFlow Workflow Summary",
         "",
@@ -58,7 +65,9 @@ def render_workflow_summary(report: WorkflowValidation) -> str:
         f"- Output directory: {report.work_dir}",
         f"- Threads: {report.threads}",
         f"- Dry-run: {'yes' if report.dry_run else 'no'}",
+        f"- Force: {'yes' if report.force_enabled else 'no'}",
         f"- envs.yaml: {report.envs_path if report.envs_path else '(not found)'}",
+        f"- Execution status: {report.execution_status}",
         "",
         "## Validation",
         "",
@@ -69,6 +78,9 @@ def render_workflow_summary(report: WorkflowValidation) -> str:
         f"- Selected module supported: {'yes' if report.module_supported else 'no'}",
         f"- requirements.yaml loaded: {'yes' if report.requirements_loaded else 'no'}",
         f"- envs.yaml found: {'yes' if report.envs_found else 'no'}",
+        f"- Output directory safety check: {'passed' if report.output_dir_safe else 'failed'}",
+        f"- Output guard message: {report.output_guard_message}",
+        f"- Output directory existed before run: {'yes' if report.output_dir_exists else 'no'}",
         f"- Output directory ready: {'yes' if report.output_dir_ready else 'no'}",
         f"- Generated script list complete: {'yes' if report.script_list_complete else 'no'}",
         f"- Dry-run will not execute external tools: {'yes' if report.dry_run_safe else 'no'}",
@@ -119,10 +131,15 @@ def render_workflow_summary(report: WorkflowValidation) -> str:
         "",
         *_markdown_list([str(path) for path in report.generated_scripts]),
         "",
+        "## Effective Parameters",
+        "",
+        "```yaml",
+        params_yaml,
+        "```",
+        "",
         "## Dry-run Note",
         "",
-        "No external tools were executed in dry-run mode. "
-        "Generated shell scripts were written for inspection only.",
+        f"{report.execution_status}. Generated shell scripts were written for inspection only.",
         "",
     ])
 
@@ -154,7 +171,12 @@ def format_console_workflow_summary(
     lines = [
         "=== Workflow summary ===",
         f"Module: {report.module}",
+        f"Input directory: {report.input_dir}",
+        f"Output directory: {report.work_dir}",
         f"Sample count: {len(report.samples)}",
+        f"Threads: {report.threads}",
+        f"Params file: {report.params_path if report.params_path else '(not provided)'}",
+        f"Force mode: {'yes' if report.force_enabled else 'no'}",
         f"Missing tools: {_format_list(report.comparison['missing_tools'])}",
         f"Missing databases: {_format_list(report.comparison['missing_databases'])}",
         "Generated scripts:",
@@ -170,6 +192,6 @@ def format_console_workflow_summary(
         lines.append(f"workflow_summary.md: {summary_path}")
 
     if report.dry_run:
-        lines.append("Dry-run: no external tools will be executed.")
+        lines.append("Dry-run: no external tools were executed.")
 
     return "\n".join(lines)
