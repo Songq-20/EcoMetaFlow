@@ -17,8 +17,11 @@ from ecometa_flow.envs import (
 from ecometa_flow.installer import run_install
 from ecometa_flow.requirements import get_module_requirements
 from ecometa_flow.runner import create_work_directories, run_scripts, write_scripts
-from ecometa_flow.samples import load_samples_csv
-from ecometa_flow.scanner import ScanError, detect_paired_samples
+from ecometa_flow.summary import (
+    format_console_workflow_summary,
+    write_workflow_summary,
+)
+from ecometa_flow.validation import validate_generated_scripts, validate_workflow
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -59,6 +62,10 @@ def _build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--envs",
         help="Path to envs.yaml (overrides auto-discovery)",
+    )
+    run_parser.add_argument(
+        "--params",
+        help="Optional YAML file with workflow parameters",
     )
     run_parser.add_argument(
         "-t", "--threads",
@@ -121,32 +128,43 @@ def cmd_run(args: argparse.Namespace) -> int:
     input_dir = Path(args.input).resolve()
     work_dir = Path(args.output).resolve()
     module = args.module
+    samples_path = Path(args.samples).resolve() if args.samples else None
+    params_path = Path(args.params).resolve() if args.params else None
 
-    try:
-        if args.samples:
-            samples_path = Path(args.samples).resolve()
-            samples = load_samples_csv(samples_path, base_dir=input_dir)
-        else:
-            samples = detect_paired_samples(input_dir)
-    except ScanError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
-        return 1
-
-    print(f"Detected {len(samples)} sample(s):")
-    for sample in samples:
-        print(f"  {sample.sample_id}: {sample.r1.name} + {sample.r2.name}")
-
-    required = get_module_requirements(module)
-    envs_path = resolve_envs_path(args.envs)
-    envs = load_envs(envs_path)
-    comparison = compare_requirements(
-        required["tools"], required["databases"], envs
+    validation = validate_workflow(
+        module=module,
+        input_dir=input_dir,
+        work_dir=work_dir,
+        samples_path=samples_path,
+        params_path=params_path,
+        envs_cli=args.envs,
+        threads=args.threads,
+        dry_run=args.dry_run,
     )
 
-    print()
-    print(format_check_report(module, required, comparison, envs_path))
+    if not validation.ok:
+        for error in validation.errors:
+            print(f"Error: {error}", file=sys.stderr)
+        return 1
 
-    if comparison["missing_tools"] or comparison["missing_databases"]:
+    print(f"Detected {len(validation.samples)} sample(s):")
+    for sample in validation.samples:
+        print(f"  {sample.sample_id}: {sample.r1.name} + {sample.r2.name}")
+
+    print()
+    print(
+        format_check_report(
+            module,
+            validation.requirements,
+            validation.comparison,
+            validation.envs_path,
+        )
+    )
+
+    if (
+        validation.comparison["missing_tools"]
+        or validation.comparison["missing_databases"]
+    ):
         print(
             "\nWarning: Some required tools or databases are missing. "
             "Run 'ecometa-flow install --module ... --dry-run' for guidance.",
@@ -157,9 +175,21 @@ def cmd_run(args: argparse.Namespace) -> int:
     create_work_directories(module, work_dir)
 
     script_paths = write_scripts(
-        module, work_dir, samples, envs, args.threads
+        module, work_dir, validation.samples, validation.envs, args.threads
     )
+    validate_generated_scripts(validation, script_paths)
+    if not validation.ok:
+        for error in validation.errors:
+            print(f"Error: {error}", file=sys.stderr)
+        return 1
+
     print(f"Wrote {len(script_paths)} script(s) to {work_dir / 'scripts'}")
+
+    summary_path = None
+    if args.dry_run:
+        summary_path = write_workflow_summary(validation)
+        print()
+        print(format_console_workflow_summary(validation, summary_path))
 
     if args.dry_run:
         print("\n=== Dry-run: planned commands ===")

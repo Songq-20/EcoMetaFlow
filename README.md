@@ -4,8 +4,8 @@ EcoMetaFlow is a beginner-friendly bioinformatics workflow runner for environmen
 
 It is designed to help users organize and run common environmental omics workflows with fewer manual configuration steps.
 
-> Current version: v0.2.0  
-> Status: dry-run workflow planner with realistic shell command generation. It does not execute real bioinformatics tools in this version.
+> Current version: v0.3.0  
+> Status: dry-run workflow planner with validation, summaries, and realistic shell command generation. It does not execute real bioinformatics tools in dry-run mode.
 
 ---
 
@@ -44,7 +44,7 @@ EcoMetaFlow currently defines four module names:
 | `read_based_risk` | Read-based microbial risk screening using taxonomic classification. |
 | `micro_risk` | Integrated microbial risk analysis based on viral, MAG, and read-based results. |
 
-In v0.2.0, these modules generate realistic dry-run shell commands and directory structures. They still do not run real external tools.
+In v0.3.0, these modules generate realistic dry-run shell commands, directory structures, validation reports, and workflow summaries. They still do not run real external tools in dry-run mode.
 
 ---
 
@@ -64,7 +64,7 @@ Install Python dependencies:
 pip install -r requirements.txt
 ```
 
-v0.2.0 only requires:
+v0.3.0 only requires:
 
 ```text
 PyYAML
@@ -92,13 +92,28 @@ ecometa-flow run \
   -i examples/raw_reads \
   -o work_virus \
   --envs examples/envs.yaml \
+  --params examples/params.yaml \
   -t 16 \
   --dry-run
 ```
 
 Dry-run mode prints the planned commands but does not execute them.
 
-In v0.2.0, the generated scripts now include realistic commands for:
+In v0.3.0, dry-run mode also writes:
+
+```text
+work_virus/workflow_summary.md
+```
+
+The summary includes the EcoMetaFlow version, selected module, inputs, output
+directory, optional params file path, thread count, detected samples, required
+tools and databases, missing tools and databases, generated scripts, and a clear
+note that no external tools were executed.
+
+`--params` is optional. When provided, EcoMetaFlow records the YAML path in
+`workflow_summary.md` and loads it for future workflow parameter support.
+
+The generated scripts include realistic commands for:
 
 - read trimming
 - assembly
@@ -113,7 +128,7 @@ In v0.2.0, the generated scripts now include realistic commands for:
 
 EcoMetaFlow scans the input folder and detects paired-end reads automatically.
 
-v0.2.0 supports these common patterns:
+v0.3.0 supports these common patterns:
 
 ```text
 Sample_R1.fq.gz / Sample_R2.fq.gz
@@ -183,7 +198,7 @@ or:
 ecometa-flow install --all
 ```
 
-In v0.2.0, installation is still dry-run only. It reports the `conda create -p ...` commands that would be used and suggests matching `envs.yaml` entries.
+In v0.3.0, installation is still dry-run only. It reports the `conda create -p ...` commands that would be used and suggests matching `envs.yaml` entries.
 
 ### For HPC/shared users
 

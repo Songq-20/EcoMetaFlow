@@ -5,6 +5,27 @@ All notable changes to EcoMetaFlow are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-06-17
+
+### Added
+
+- Workflow validation for input folders, sample detection, optional
+  `samples.csv`, module support, built-in requirements, `envs.yaml`, required
+  tools/databases, output directory creation, generated scripts, and dry-run
+  safety
+- Optional `--params` support for recording and loading workflow parameter YAML
+  files during `run --dry-run`
+- `workflow_summary.md` generation after `run --dry-run`
+- Readable console workflow summary with module, sample count, missing
+  requirements, generated scripts, and summary path
+- Tests for validation, missing inputs, missing `envs.yaml`, summary creation,
+  and dry-run non-execution
+
+### Changed
+
+- CLI version bumped to `0.3.0`
+- Generated script headers now identify the v0.3.0 dry-run workflow plan
+
 ## [0.2.0] - 2026-06-08
 
 ### Added
