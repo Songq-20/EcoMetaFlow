@@ -93,7 +93,7 @@ def validate_workflow(
         execution_status=(
             "No external tools were executed in dry-run mode"
             if dry_run
-            else "Real execution disabled in v0.4.0"
+            else "Real execution disabled in v0.5.0"
         ),
     )
 

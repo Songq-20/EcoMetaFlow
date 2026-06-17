@@ -4,8 +4,8 @@ EcoMetaFlow is a beginner-friendly bioinformatics workflow runner for environmen
 
 It is designed to help users organize and run common environmental omics workflows with fewer manual configuration steps.
 
-> Current version: v0.4.0  
-> Status: safe dry-run workflow planner with execution guards, parameter validation, summaries, and realistic shell command generation. It does not execute real bioinformatics tools.
+> Current version: v0.5.0  
+> Status: safe dry-run workflow planner with execution guards, parameter validation, summaries, realistic shell command generation, and review-only environment bootstrap plans. It does not execute real bioinformatics tools.
 
 ---
 
@@ -44,7 +44,7 @@ EcoMetaFlow currently defines four module names:
 | `read_based_risk` | Read-based microbial risk screening using taxonomic classification. |
 | `micro_risk` | Integrated microbial risk analysis based on viral, MAG, and read-based results. |
 
-In v0.4.0, these modules generate realistic dry-run shell commands, directory structures, validation reports, and workflow summaries. Real execution is disabled in this version.
+In v0.5.0, these modules generate realistic dry-run shell commands, directory structures, validation reports, workflow summaries, and safe environment bootstrap plans. Real execution is disabled in this version.
 
 ---
 
@@ -64,7 +64,7 @@ Install Python dependencies:
 pip install -r requirements.txt
 ```
 
-v0.4.0 only requires:
+v0.5.0 only requires:
 
 ```text
 PyYAML
@@ -102,7 +102,7 @@ Dry-run mode prints the planned commands but does not execute them. Use
 `--force` only when you intentionally want to regenerate scripts and
 `workflow_summary.md` in an existing output directory.
 
-In v0.4.0, dry-run mode also writes:
+In v0.5.0, dry-run mode also writes:
 
 ```text
 work_virus/workflow_summary.md
@@ -133,7 +133,7 @@ The generated scripts include realistic commands for:
 
 EcoMetaFlow scans the input folder and detects paired-end reads automatically.
 
-v0.4.0 supports these common patterns:
+v0.5.0 supports these common patterns:
 
 ```text
 Sample_R1.fq.gz / Sample_R2.fq.gz
@@ -203,11 +203,38 @@ or:
 ecometa-flow install --all
 ```
 
-In v0.4.0, installation is still dry-run only. It reports the `conda create -p ...` commands that would be used and suggests matching `envs.yaml` entries.
+In v0.5.0, installation is still dry-run only. It reports required tools that
+are already configured in `envs.yaml`, tools found in `PATH`, missing tools,
+missing databases, suggested `conda create -p ...` commands, and matching
+`envs.yaml` entries.
+
+You can also write review-only bootstrap files:
+
+```bash
+ecometa-flow install \
+  --module virus_prediction \
+  --dry-run \
+  --write-script bootstrap_virus_prediction.sh \
+  --write-envs envs.virus_prediction.yaml \
+  --force
+```
+
+The generated shell script is not run by EcoMetaFlow. It contains suggested
+conda commands for missing tools only. Database downloads are never included.
+The generated envs template includes PATH-detected tools as `mode: command`,
+missing tools as conda placeholders, and missing databases as placeholder paths.
+
+Install safety rules:
+
+- EcoMetaFlow never runs `conda create` automatically.
+- EcoMetaFlow never downloads databases automatically.
+- EcoMetaFlow never modifies shell configuration.
+- Generated bootstrap files are not overwritten unless `--force` is provided.
+- Every install report ends with `No installation was performed.`
 
 ### Execution safety
 
-Real execution is not enabled in v0.4.0. If you omit `--dry-run`,
+Real execution is not enabled in v0.5.0. If you omit `--dry-run`,
 EcoMetaFlow stops with a clear error instead of running generated scripts.
 
 EcoMetaFlow also refuses unsafe output directories, including `/`, your home
@@ -313,7 +340,7 @@ ecometa-flow install --all --dry-run
 
 `--all` may be very large in future versions because databases can be huge. Most users should start with module-level installation.
 
-In v0.2.0, `install` still does not download tools or databases. It only reports what would be installed.
+In v0.5.0, `install` still does not download tools or databases. It only reports what would be installed and can write review-only bootstrap files.
 
 ---
 

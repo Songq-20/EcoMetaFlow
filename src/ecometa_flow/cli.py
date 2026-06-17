@@ -122,7 +122,20 @@ def _build_parser() -> argparse.ArgumentParser:
         "--dry-run",
         action="store_true",
         default=True,
-        help="Show install plan without making changes (default in v0.2.0)",
+        help="Show install plan without making changes (default in v0.5.0)",
+    )
+    install_parser.add_argument(
+        "--write-script",
+        help="Write a review-only shell script with suggested conda commands",
+    )
+    install_parser.add_argument(
+        "--write-envs",
+        help="Write an envs.yaml template for review",
+    )
+    install_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow overwriting generated bootstrap files",
     )
 
     return parser
@@ -234,12 +247,21 @@ def cmd_check(args: argparse.Namespace) -> int:
 
 def cmd_install(args: argparse.Namespace) -> int:
     """Handle the 'install' subcommand."""
-    report = run_install(
-        module=args.module,
-        install_all=args.all,
-        envs_cli=args.envs,
-        dry_run=args.dry_run,
-    )
+    try:
+        report = run_install(
+            module=args.module,
+            install_all=args.all,
+            envs_cli=args.envs,
+            dry_run=args.dry_run,
+            write_script=Path(args.write_script).resolve()
+            if args.write_script
+            else None,
+            write_envs=Path(args.write_envs).resolve() if args.write_envs else None,
+            force=args.force,
+        )
+    except FileExistsError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
     print(report)
     return 0
 

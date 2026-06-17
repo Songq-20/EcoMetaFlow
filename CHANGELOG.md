@@ -5,6 +5,26 @@ All notable changes to EcoMetaFlow are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-17
+
+### Added
+
+- PATH-aware tool detection for install planning with `shutil.which()`
+- Install reports that distinguish tools configured in `envs.yaml`, tools found
+  in PATH, tools still missing, and databases requiring explicit paths
+- `install --write-script PATH` for review-only conda bootstrap scripts
+- `install --write-envs PATH` for review-only `envs.yaml` templates
+- `install --force` for overwriting generated bootstrap files only
+- Tests for PATH detection, bootstrap file generation, overwrite protection,
+  database safety, and non-execution of conda commands
+
+### Changed
+
+- CLI version bumped to `0.5.0`
+- Generated script headers now identify the v0.5.0 dry-run workflow plan
+- Install reports now explicitly say no installation or database download was
+  performed
+
 ## [0.4.0] - 2026-06-17
 
 ### Added
